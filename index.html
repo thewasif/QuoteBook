@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat|Ubuntu|Germania+One|Exo+2" rel="stylesheet">
+    <title>Quote Book</title>
+  </head>
+  <body>
+    <div class="cont">
+
+    </div>
+
+<button id="show-dialog" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored btn-add">
+  <i class="material-icons">add</i>
+</button>
+
+
+  <dialog class="mdl-dialog" id="upload-d">
+    <h4 class="mdl-dialog__title">Write the information.</h4>
+    <div class="mdl-dialog__content">
+
+
+  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+    <input class="mdl-textfield__input" type="text" id="name">
+    <label class="mdl-textfield__label">Name:</label>
+  </div>
+
+  <div class="mdl-textfield mdl-js-textfield">
+    <textarea class="mdl-textfield__input" type="text" rows= "3" id="quote"></textarea>
+    <label class="mdl-textfield__label" >Type quote here...</label>
+  </div>
+
+  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+    <input class="mdl-textfield__input" type="text" id="sayer">
+    <label class="mdl-textfield__label">Who said above quote?</label>
+  </div>
+
+
+
+    </div>
+    <div class="mdl-dialog__actions">
+      <button class="mdl-button mdl-button--colored close" onclick="addNew()">Upload</button>
+      <button class="mdl-button close2">Cancel</button>
+    </div>
+  </dialog>
+  <script>
+    var dialog_1 = document.querySelector('#upload-d');
+    var showDialogButton = document.querySelector('#show-dialog');
+    if (!dialog_1.showModal) {
+      dialogPolyfill.registerDialog(dialog_1);
+    }
+    showDialogButton.addEventListener('click', function() {
+      dialog_1.showModal();
+    });
+    dialog_1.querySelector('.close').addEventListener('click', function() {
+      dialog_1.close();
+      setTimeout(function(){
+        console.log("Asking..");
+        var n = localStorage.getItem("n");
+        if(n == null){
+          askFeedback();
+          localStorage.setItem("n", "done");
+        }
+      }, 1000)
+    });
+    dialog_1.querySelector('.close2').addEventListener('click', function() {
+      dialog_1.close();
+      setTimeout(function(){
+        console.log("Asking..");
+        var n = localStorage.getItem("n");
+        if(n == null){
+          askFeedback();
+          localStorage.setItem("n", "done");
+        }
+      }, 1000)
+    });
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+  <dialog class="mdl-dialog" id="welcome-d">
+    <h4 class="mdl-dialog__title">Welcome to QuoteBook!</h4>
+    <div class="mdl-dialog__content">
+      <p>Post only quotations! If you spam the feed by posting inappropriate content, it will be removed by <b>Admin</b> and you wil; not be able to visit the site.</p>
+    </div>
+    <div class="mdl-dialog__actions">
+      <button class="mdl-button close btn-ok">Okay</button>
+    </div>
+  </dialog>
+  <script>
+    var dialog_2 = document.querySelector('#welcome-d');
+    if (!dialog_2.showModal) {
+      dialogPolyfill.registerDialog(dialog_2);
+    }
+    dialog_2.querySelector('.btn-ok').addEventListener('click', function() {
+      dialog_2.close();
+    });
+
+  </script>
+
+
+  <script src="script.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/5.9.2/firebase.js"></script>
+<script type="text/javascript">
+// Initialize Firebase
+var config = {
+apiKey: "AIzaSyBLeROVnHx94oAnRpG2bkNq45sk89jWGYY",
+authDomain: "sololearndevdurvey.firebaseapp.com",
+databaseURL: "https://sololearndevdurvey.firebaseio.com",
+projectId: "sololearndevdurvey",
+storageBucket: "sololearndevdurvey.appspot.com",
+messagingSenderId: "880127252609"
+};
+firebase.initializeApp(config);
+
+var dateObj = new Date();
+var ref = firebase.database().ref('/data');
+var arr = [];
+ref.on('value',writeOnScreen)
+
+function writeOnScreen(){
+
+ref.once('value', function(snap){
+  var len = snap.val().length
+  while(arr.length > 0) {
+    arr.pop();
+  }
+  for(var i = 0; i< len ; i++){
+    arr.push(snap.val()[i]);
+  }
+});
+  var cont = document.querySelector('.cont');
+  cont.innerHTML = "";
+    for(var i = arr.length-1; i >= 0; i--){
+      cont.innerHTML += "<div class='card'><div class='upper-cont'><p class='p'>Uploaded By: <b>"+ arr[i].name +"</b></p><p class='time'>"+arr[i].time+"</p></div><div class='lower-cont'><h2 class='quote'>"+arr[i].quote+"</h2><p>- "+arr[i].sayer+"</p></div></div>";
+    }
+}
+function addNew(){
+  var name = document.querySelector("#name").value;
+  var quote = document.querySelector("#quote").value;
+  var sayer = document.querySelector("#sayer").value;
+  var time = "";
+  var newQuote = new Quote(name, quote, sayer, time);
+  newQuote = JSON.stringify(newQuote);
+  ref.once('value', function(snap){
+    var id = snap.val().length;
+    ref.child(id).set(JSON.parse(newQuote));
+  });
+}
+function Quote(name, quote, sayer, time){
+  this.name = name;
+  this.quote = quote;
+  this.sayer = sayer;
+  const monthNames = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+  var hour = dateObj.getHours();
+  var mint = dateObj.getMinutes();
+  var month = monthNames[dateObj.getMonth()]
+  var date = dateObj.getDate();
+  if (hour == 0) {
+    hour = 12;
+  }
+  if(mint <= 9){
+    mint = "0" + mint;
+  }
+  if (hour <= 9) {
+    hour = "0" + hour;
+  }
+  this.time = month + " " + date + "  -" + hour + ":" + mint;
+
+}
+window.onload = dialog_2.showModal();
+function askFeedback(){
+  var c = confirm("QuoteBook is created by a passionate developer who is curious about learning. Would you like to give feedback to him?");
+  if(c){
+    var feedback = prompt("Write your feedback here...");
+    var name_2 = document.querySelector("#name").value;
+    var ref_2 = firebase.database().ref("/feedback")
+    ref_2.child(name_2).set(feedback);
+  }else{
+    alert("Okay! as you wish.\nHope you will like this app.");
+  }
+}
+</script>
+
+
+  </body>
+</html>
